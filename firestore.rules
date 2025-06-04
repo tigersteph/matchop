@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Fonction pour vérifier si l'utilisateur est authentifié
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Fonction pour vérifier si l'utilisateur est un membre du personnel
+    function isStaff() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/staff/$(request.auth.uid));
+    }
+
+    // Règles pour la collection menu_items
+    match /menu_items/{itemId} {
+      allow read: if true; // Tout le monde peut voir le menu
+      allow write: if isStaff(); // Seul le personnel peut modifier le menu
+    }
+
+    // Règles pour la collection orders
+    match /orders/{orderId} {
+      // Fonction pour vérifier si l'ordre appartient à la table de l'utilisateur
+      function isOrderFromTable(tableNumber) {
+        return resource.data.tableNumber == tableNumber;
+      }
+
+      allow read: if isStaff() || 
+        (isAuthenticated() && isOrderFromTable(request.auth.token.tableNumber));
+      allow create: if true; // Permettre aux clients de créer des commandes
+      allow update: if isStaff(); // Seul le personnel peut mettre à jour les commandes
+      allow delete: if isStaff(); // Seul le personnel peut supprimer les commandes
+    }
+
+    // Règles pour la collection staff
+    match /staff/{userId} {
+      allow read: if isStaff();
+      allow write: if isStaff() && request.auth.uid == userId;
+    }
+
+    // Règles par défaut - refuser tout autre accès
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 

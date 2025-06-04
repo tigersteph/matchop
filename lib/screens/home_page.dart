@@ -4,6 +4,11 @@ import 'package:resto/models/restaurant.dart';
 import 'package:resto/screens/qr_scanner_page.dart';
 import 'package:resto/screens/firebase_test_page.dart';
 import 'package:resto/screens/menu_test_page.dart';
+import 'package:resto/screens/order_management_screen.dart';
+import 'package:resto/screens/login_screen.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_service.dart';
+import 'package:resto/screens/staff_management_screen.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,6 +19,33 @@ class HomePage extends StatelessWidget {
         builder: (context) => page,
       ),
     );
+  }
+
+  void _navigateToOrderManagement(BuildContext context) async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final user = authService.currentUser;
+
+    if (user == null) {
+      // L'utilisateur n'est pas connecté, rediriger vers la page de connexion
+      _navigateToPage(
+        context,
+        LoginScreen(destinationPage: const OrderManagementScreen()),
+      );
+    } else {
+      // Vérifier si l'utilisateur est un membre du personnel
+      final isStaff = await authService.isStaffMember();
+      if (isStaff) {
+        if (!context.mounted) return;
+        _navigateToPage(context, const OrderManagementScreen());
+      } else {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Accès non autorisé. Contactez un administrateur.'),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -34,6 +66,13 @@ class HomePage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.restaurant_menu),
             onPressed: () => _navigateToPage(context, const MenuTestPage()),
+          ),
+          IconButton(
+            icon: const Icon(Icons.receipt_long),
+            onPressed: () => _navigateToOrderManagement(context),
+          ),IconButton(
+            icon: const Icon(Icons.people),
+            onPressed: () => _navigateToPage(context, const StaffManagementScreen()),
           ),
         ],
       ),

@@ -1,63 +1,42 @@
-class Order {
-  final String id;
-  final String tableNumber;
-  final List<OrderItem> items;
-  final DateTime timestamp;
-  final String status; // 'pending', 'preparing', 'ready', 'served'
-
-  Order({
-    required this.id,
-    required this.tableNumber,
-    required this.items,
-    required this.timestamp,
-    required this.status,
-  });
-
-  factory Order.fromJson(Map<String, dynamic> json) {
-    return Order(
-      id: json['id'] as String,
-      tableNumber: json['tableNumber'] as String,
-      items: (json['items'] as List).map((item) => OrderItem.fromJson(item)).toList(),
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      status: json['status'] as String,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'tableNumber': tableNumber,
-      'items': items.map((item) => item.toJson()).toList(),
-      'timestamp': timestamp.toIso8601String(),
-      'status': status,
-    };
-  }
-
-  double get totalAmount => items.fold(0, (sum, item) => sum + (item.price * item.quantity));
+enum MenuCategory {
+  entree,
+  plat,
+  dessert,
+  boisson
 }
 
 class OrderItem {
   final String menuItemId;
   final String name;
-  int quantity; // Removed final to allow modification
   final double price;
+  final int quantity;
   final String? specialInstructions;
+  final MenuCategory category;
 
   OrderItem({
     required this.menuItemId,
     required this.name,
-    required this.quantity,
     required this.price,
+    required this.quantity,
     this.specialInstructions,
+    required this.category,
   });
 
-  factory OrderItem.fromJson(Map<String, dynamic> json) {
+  OrderItem copyWith({
+    String? menuItemId,
+    String? name,
+    double? price,
+    int? quantity,
+    String? specialInstructions,
+    MenuCategory? category,
+  }) {
     return OrderItem(
-      menuItemId: json['menuItemId'] as String,
-      name: json['name'] as String,
-      quantity: json['quantity'] as int,
-      price: (json['price'] as num).toDouble(),
-      specialInstructions: json['specialInstructions'] as String?,
+      menuItemId: menuItemId ?? this.menuItemId,
+      name: name ?? this.name,
+      price: price ?? this.price,
+      quantity: quantity ?? this.quantity,
+      specialInstructions: specialInstructions ?? this.specialInstructions,
+      category: category ?? this.category,
     );
   }
 
@@ -65,9 +44,63 @@ class OrderItem {
     return {
       'menuItemId': menuItemId,
       'name': name,
-      'quantity': quantity,
       'price': price,
+      'quantity': quantity,
       'specialInstructions': specialInstructions,
+      'category': category.toString().split('.').last,
     };
   }
+
+  factory OrderItem.fromJson(Map<String, dynamic> json) {
+    return OrderItem(
+      menuItemId: json['menuItemId'],
+      name: json['name'],
+      price: json['price'].toDouble(),
+      quantity: json['quantity'],
+      specialInstructions: json['specialInstructions'],
+      category: MenuCategory.values.firstWhere(
+        (e) => e.toString().split('.').last == json['category'],
+      ),
+    );
+  }
+}
+
+class Order {
+  final String id;
+  final String tableNumber;
+  final List<OrderItem> items;
+  final String status;
+  final DateTime timestamp;
+
+  Order({
+    required this.id,
+    required this.tableNumber,
+    required this.items,
+    required this.status,
+    required this.timestamp,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'tableNumber': tableNumber,
+      'items': items.map((item) => item.toJson()).toList(),
+      'status': status,
+      'timestamp': timestamp.toIso8601String(),
+    };
+  }
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      id: json['id'],
+      tableNumber: json['tableNumber'],
+      items: (json['items'] as List)
+          .map((item) => OrderItem.fromJson(item))
+          .toList(),
+      status: json['status'],
+      timestamp: DateTime.parse(json['timestamp']),
+    );
+  }
+
+  double get totalAmount => items.fold(0, (sum, item) => sum + (item.price * item.quantity));
 }

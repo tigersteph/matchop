@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/menu_item.dart';
-import '../models/order.dart';
+import '../models/order.dart' as app_order;
 import '../services/order_service.dart';
 import '../models/menu.dart';
 
@@ -27,7 +27,7 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
     'dessert': [],
     'boisson': [],
   };
-  final List<OrderItem> _selectedItems = [];
+  final List<app_order.OrderItem> _selectedItems = [];
   bool _isLoading = false;
   String? _error;
   late AnimationController _animationController;
@@ -60,6 +60,48 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
     _tabController.dispose();
     Menu.dispose();
     super.dispose();
+  }
+
+  app_order.MenuCategory _getCategoryFromString(String category) {
+    switch (category.toLowerCase()) {
+      case 'entrée':
+        return app_order.MenuCategory.entree;
+      case 'résistance':
+        return app_order.MenuCategory.plat;
+      case 'dessert':
+        return app_order.MenuCategory.dessert;
+      case 'boisson':
+        return app_order.MenuCategory.boisson;
+      default:
+        return app_order.MenuCategory.plat;
+    }
+  }
+
+  void _addToOrder(MenuItem item) {
+    setState(() {
+      final category = _getCategoryFromString(_tabController.index == 0 ? 'entrée' :
+                                            _tabController.index == 1 ? 'résistance' :
+                                            _tabController.index == 2 ? 'dessert' : 'boisson');
+      
+      final existingItemIndex = _selectedItems.indexWhere(
+        (orderItem) => orderItem.menuItemId == item.id,
+      );
+
+      if (existingItemIndex == -1) {
+        _selectedItems.add(app_order.OrderItem(
+          menuItemId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: 1,
+          category: category,
+        ));
+      } else {
+        final existingItem = _selectedItems[existingItemIndex];
+        _selectedItems[existingItemIndex] = existingItem.copyWith(
+          quantity: existingItem.quantity + 1,
+        );
+      }
+    });
   }
 
   Widget _buildMenuItem(MenuItem item) {
@@ -200,26 +242,6 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
     );
   }
 
-  void _addToOrder(MenuItem item) {
-    setState(() {
-      final existingItem = _selectedItems.firstWhere(
-        (orderItem) => orderItem.menuItemId == item.id,
-        orElse: () => OrderItem(
-          menuItemId: item.id,
-          name: item.name,
-          quantity: 0,
-          price: item.price,
-        ),
-      );
-
-      if (existingItem.quantity == 0) {
-        _selectedItems.add(existingItem);
-      }
-      
-      existingItem.quantity++;
-    });
-  }
-
   Future<void> _submitOrder() async {
     if (_selectedItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -231,7 +253,7 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
     try {
       final orderService = Provider.of<OrderService>(context, listen: false);
       await orderService.submitOrder(
-        Order(
+        app_order.Order(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           tableNumber: widget.tableNumber,
           items: _selectedItems,
