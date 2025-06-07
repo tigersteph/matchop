@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/menu_item.dart';
 import '../models/order.dart' as app_order;
 import '../services/order_service.dart';
 import '../models/menu.dart';
+import '../services/deep_link_service.dart';
 
 class MenuScreen extends StatefulWidget {
   final String tableNumber;
@@ -244,12 +246,14 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
 
   Future<void> _submitOrder() async {
     if (_selectedItems.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez sélectionner au moins un article')),
       );
       return;
     }
 
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     try {
       final orderService = Provider.of<OrderService>(context, listen: false);
       await orderService.submitOrder(
@@ -262,7 +266,8 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
         ),
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+      scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('Commande envoyée avec succès')),
       );
       
@@ -270,7 +275,8 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
         _selectedItems.clear();
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+      scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Erreur: ${e.toString()}')),
       );
     }
@@ -290,6 +296,41 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
             Tab(text: 'Boissons'),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final deepLinkService = Provider.of<DeepLinkService>(context, listen: false);
+              
+              try {
+                final link = await deepLinkService.createMenuShareLink(
+                  menuId: "test-menu-123",
+                  menuName: "Menu Test",
+                  restaurantName: "Restaurant Test",
+                  imageUrl: "https://example.com/menu-image.jpg"
+                );
+                
+                await Clipboard.setData(ClipboardData(text: link));
+                if (!mounted) return;
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Lien copié !'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              } catch (e) {
+                if (!mounted) return;
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Erreur : $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -301,7 +342,7 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(_error!, style: TextStyle(color: Colors.red)),
+                        Text(_error!, style: const TextStyle(color: Colors.red)),
                         ElevatedButton(
                           onPressed: _loadMenuItems,
                           child: const Text('Réessayer'),

@@ -15,7 +15,18 @@
 
   <script>
     // The value below is injected by flutter build, do not touch.
-    const serviceWorkerVersion = null;
+    const serviceWorkerVersion = "{{flutter_service_worker_version}}";
+    // Configuration des liens profonds
+    window.handleDeepLink = function(url) {
+      // Traiter le lien profond ici
+      console.log('Received deep link:', url);
+    };
+    // Configuration des liens universels
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'deep_link') {
+        handleDeepLink(e.data.url);
+      }
+    });
   </script>
   <!-- Firebase Core JS SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
@@ -23,6 +34,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js"></script>
   <!-- Firebase Firestore JS SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js"></script>
+  <!-- Firebase Dynamic Links JS SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-dynamic-links.js"></script>
+  <!-- Firebase Analytics JS SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-analytics.js"></script>
   <!-- Firebase Configuration -->
   <script>
     const firebaseConfig = {
@@ -44,10 +59,8 @@
   <script>
     window.addEventListener('load', function(ev) {
       // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
+      _flutter.loader.load({
+        serviceWorkerVersion: serviceWorkerVersion,
         onEntrypointLoaded: function(engineInitializer) {
           engineInitializer.initializeEngine().then(function(appRunner) {
             appRunner.runApp();

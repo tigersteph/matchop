@@ -1,1 +1,42 @@
- 
+buildscript {
+    ext.kotlin_version = '1.5.31'
+    ext.kotlinx_coroutines_version = '1.5.2'
+    
+    repositories {
+        maven {
+            url "file://${rootDir}/../.flutter_tool/gradle_cache"
+        }
+        maven {
+            url "file://${rootDir}/../.pub-cache/hosted/pub.dartlang.org"
+        }
+        maven {
+            url "file://${rootDir}/../.pub-cache/hosted/pub.dartlang.org/gradle-plugin"
+        }
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.3.3'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.9'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    project.evaluationDependsOn(':app')
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

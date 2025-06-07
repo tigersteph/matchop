@@ -4,11 +4,13 @@ import 'menu_item.dart';
 class Menu {
   final List<MenuCategory> categories;
   static final ApiService _apiService = ApiService();
+  static String? _currentRestaurantId;
 
   Menu({required this.categories});
 
   static Future<Menu> fetchMenu(String restaurantId) async {
     try {
+      _currentRestaurantId = restaurantId;
       return await _apiService.fetchMenu(restaurantId);
     } catch (e) {
       rethrow;
@@ -41,15 +43,25 @@ class Menu {
   }
 
   static Function(Menu)? _onMenuUpdated;
+
+  /// Configure le callback pour les mises à jour du menu
+  /// Nécessite qu'un menu ait été précédemment chargé avec fetchMenu
   static void setOnMenuUpdated(Function(Menu) callback) {
+    if (_currentRestaurantId == null) {
+      throw StateError(
+        'Aucun restaurant actif. Appelez fetchMenu avant de configurer le callback.'
+      );
+    }
+
     _onMenuUpdated = callback;
-    _apiService.setOnMenuUpdated((menu) {
+    _apiService.setOnMenuUpdated(_currentRestaurantId!, (menu) {
       _onMenuUpdated?.call(menu);
     });
   }
 
   static void dispose() {
     _onMenuUpdated = null;
+    _currentRestaurantId = null;
     _apiService.dispose();
   }
 }

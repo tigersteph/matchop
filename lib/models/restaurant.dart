@@ -15,7 +15,7 @@ class Restaurant {
     required this.description,
   });
 
-  static List<Restaurant> sampleData = [
+  static const List<Restaurant> sampleData = [
     Restaurant(
       name: 'Le Petit Bistro',
       imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
