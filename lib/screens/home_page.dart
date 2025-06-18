@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
       // L'utilisateur n'est pas connecté, rediriger vers la page de connexion
         if (!mounted) return;
       _navigateToPage(
-        const LoginScreen(destinationPage: const OrderManagementScreen()),
+        const LoginScreen(destinationPage: OrderManagementScreen()),
       );
         return;
       }

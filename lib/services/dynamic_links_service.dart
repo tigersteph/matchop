@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:uni_links/uni_links.dart';
+import 'package:app_links/app_links.dart';
 import 'dart:async';
 
 /// Types de liens supportés
@@ -22,14 +22,14 @@ class DeepLinkException implements Exception {
   DeepLinkException(this.message, [this.originalError]);
 
   @override
-  String toString() => 'DeepLinkException: $message${originalError != null ? ' ($originalError)' : ''}';
+  String toString() =>
+      'DeepLinkException: $message${originalError != null ? ' ($originalError)' : ''}';
 }
 
 class DeepLinkService {
   final functions = FirebaseFunctions.instance;
+  final _appLinks = AppLinks();
   StreamSubscription? _linkSubscription;
-  
-
 
   /// Initialise le service de liens
   Future<void> initDeepLinks(BuildContext context) async {
@@ -39,29 +39,31 @@ class DeepLinkService {
 
     try {
       // Gérer les liens pendant que l'app est en arrière-plan
-      _linkSubscription = uriLinkStream.listen(
-        (Uri? uri) {
-          if (uri != null && context.mounted) {
+      _linkSubscription = _appLinks.uriLinkStream.listen(
+        (Uri uri) {
+          if (context.mounted) {
             _handleDeepLink(uri, navigator);
           }
         },
         onError: (error) {
           debugPrint('Erreur de lien: $error');
           if (snackBarContext.mounted) {
-            _showErrorSnackBar(snackBarContext, 'Erreur lors de l\'ouverture du lien');
+            _showErrorSnackBar(
+                snackBarContext, 'Erreur lors de l\'ouverture du lien');
           }
         },
       );
 
-      // Gérer les liens qui ont ouvert l'app
-      final initialUri = await getInitialUri();
+      // CORRECTION: Utiliser getInitialLink() au lieu de getInitialUriLink()
+      final initialUri = await _appLinks.getInitialAppLink();
       if (initialUri != null && context.mounted) {
         _handleDeepLink(initialUri, navigator);
       }
     } catch (e) {
       debugPrint('Erreur lors de l\'initialisation des liens: $e');
       if (snackBarContext.mounted) {
-        _showErrorSnackBar(snackBarContext, 'Erreur lors de l\'initialisation des liens');
+        _showErrorSnackBar(
+            snackBarContext, 'Erreur lors de l\'initialisation des liens');
       }
     }
   }
@@ -77,7 +79,9 @@ class DeepLinkService {
       // Valider les paramètres
       if (path.isEmpty) throw ArgumentError('Le chemin ne peut pas être vide');
       if (title.isEmpty) throw ArgumentError('Le titre ne peut pas être vide');
-      if (description.isEmpty) throw ArgumentError('La description ne peut pas être vide');
+      if (description.isEmpty) {
+        throw ArgumentError('La description ne peut pas être vide');
+      }
 
       final callable = functions.httpsCallable('createShortLink');
       final result = await callable.call({
@@ -162,7 +166,8 @@ class DeepLinkService {
 
       final linkType = DeepLinkType.values.firstWhere(
         (type) => type.path == pathSegments[0],
-        orElse: () => throw DeepLinkException('Type de lien inconnu: ${pathSegments[0]}'),
+        orElse: () =>
+            throw DeepLinkException('Type de lien inconnu: ${pathSegments[0]}'),
       );
 
       if (pathSegments.length < 2) {
@@ -209,7 +214,7 @@ class DeepLinkService {
   /// Affiche une snackbar d'erreur
   void _showErrorSnackBar(BuildContext context, String message) {
     if (!context.mounted) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(

@@ -1,25 +1,21 @@
+wrapper {
+    gradleVersion = '8.10'
+    distributionUrl = 'https://services.gradle.org/distributions/gradle-8.10-bin.zip'
+}
+
 buildscript {
-    ext.kotlin_version = '1.5.31'
-    ext.kotlinx_coroutines_version = '1.5.2'
+    ext.kotlin_version = '1.8.20'
+    ext.javaVersion = JavaVersion.VERSION_17
     
     repositories {
-        maven {
-            url "file://${rootDir}/../.flutter_tool/gradle_cache"
-        }
-        maven {
-            url "file://${rootDir}/../.pub-cache/hosted/pub.dartlang.org"
-        }
-        maven {
-            url "file://${rootDir}/../.pub-cache/hosted/pub.dartlang.org/gradle-plugin"
-        }
         google()
         mavenCentral()
     }
-
+    
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'com.android.tools.build:gradle:8.1.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.3.3'
+        classpath 'com.google.gms:google-services:4.4.0'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.9'
     }
 }

@@ -1,72 +1,260 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/">
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  
+  <!-- Métadonnées SEO -->
+  <meta name="description" content="Application de restaurant - Commandez vos plats préférés">
+  <meta name="keywords" content="restaurant, commande, livraison, nourriture">
+  <meta name="author" content="Restaurant App">
+  
+  <!-- Métadonnées Open Graph -->
+  <meta property="og:title" content="Restaurant App">
+  <meta property="og:description" content="Application de restaurant - Commandez vos plats préférés">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/icons/Icon-512.png">
+  
+  <!-- Configuration PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="resto">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-  <link rel="icon" type="image/png" href="favicon.png"/>
-  <title>resto</title>
-  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Restaurant App">
+  <!-- Thème pour les navigateurs modernes -->
+  <style>
+    :root {
+      --theme-color-light: #2196F3;
+      --theme-color-dark: #121212;
+    }
 
-  <script>
-    // The value below is injected by flutter build, do not touch.
-    const serviceWorkerVersion = "{{flutter_service_worker_version}}";
-    // Configuration des liens profonds
-    window.handleDeepLink = function(url) {
-      // Traiter le lien profond ici
-      console.log('Received deep link:', url);
-    };
-    // Configuration des liens universels
-    window.addEventListener('message', function(e) {
-      if (e.data && e.data.type === 'deep_link') {
-        handleDeepLink(e.data.url);
+    @media (prefers-color-scheme: light) {
+      :root {
+        --theme-color: var(--theme-color-light);
       }
-    });
-  </script>
-  <!-- Firebase Core JS SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
-  <!-- Firebase Auth JS SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js"></script>
-  <!-- Firebase Firestore JS SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js"></script>
-  <!-- Firebase Dynamic Links JS SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-dynamic-links.js"></script>
-  <!-- Firebase Analytics JS SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-analytics.js"></script>
-  <!-- Firebase Configuration -->
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --theme-color: var(--theme-color-dark);
+      }
+    }
+  </style>
+  
+  <!-- Icônes -->
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/Icon-192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  
+  <title>Restaurant App</title>
+
+  <!-- Preconnect pour les performances -->
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-dynamic-links-compat.js"></script>
   <script>
-    const firebaseConfig = {
-      // Copiez ici la configuration de votre application Web Firebase
-      // Ces informations se trouvent dans la console Firebase
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+    // Variables d'environnement (à configurer selon l'environnement)
+    window.ENV = {
+      production: true,
+      apiUrl: 'https://api.votre-domaine.com',
+      version: '1.0.0'
     };
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-  </script>
-  <script src="flutter.js" defer></script>
-</head>
-<body>
-  <script>
-    window.addEventListener('load', function(ev) {
-      // Download main.dart.js
-      _flutter.loader.load({
-        serviceWorkerVersion: serviceWorkerVersion,
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
-            appRunner.runApp();
+
+    // Configuration Firebase
+    const firebaseConfig = {
+      apiKey: 'AIzaSyCtxwawDgBddPzxYGtkFRWlFajOwSBiXxM',
+      authDomain: 'matchop-restaurant.firebaseapp.com',
+      projectId: 'matchop-restaurant',
+      storageBucket: 'matchop-restaurant.appspot.com',
+      messagingSenderId: '859344028714',
+      appId: '1:859344028714:web:1bda20a0c2dd0c8c184332'
+    };
+
+    // Vérification de l'initialisation Firebase
+    if (!firebase.apps.length) {
+      try {
+        firebase.initializeApp(firebaseConfig);
+        console.log('Firebase initialisé avec succès');
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation Firebase:', error);
+      }
+    } else {
+      console.log('Firebase déjà initialisé');
+    }
+
+    // Configuration des liens profonds améliorée
+    window.handleDeepLink = function(url) {
+      try {
+        console.log('Lien profond reçu:', url);
+        const urlObj = new URL(url);
+        const path = urlObj.pathname;
+        const params = urlObj.searchParams;
+        
+        if (window.flutter_inappwebview) {
+          window.flutter_inappwebview.callHandler('handleDeepLink', {
+            url: url,
+            path: path,
+            params: Object.fromEntries(params)
           });
         }
+      } catch (error) {
+        console.error('Erreur lors du traitement du lien profond:', error);
+      }
+    };
+
+    // Gestion des messages
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'deep_link') {
+        handleDeepLink(event.data.url);
+      }
+    });
+
+    // Service Worker
+    const serviceWorkerVersion = "{{flutter_service_worker_version}}";
+    
+    // Configuration Flutter optimisée
+    window._flutter = {
+      config: {
+        // Configuration de base
+        baseHref: '$FLUTTER_BASE_HREF',
+        // Configuration pour le mode de rendu
+        renderer: 'canvaskit',
+        // Configuration pour le mode de développement
+        mode: window.ENV.production ? 'release' : 'debug',
+        // Configuration pour les définitions Dart
+        dartDefines: window.ENV.production ? [
+          'FLUTTER_WEB_USE_SKIA=true'
+        ] : [
+          'FLUTTER_WEB_USE_SKIA=true',
+          'FLUTTER_WEB_USE_DART_DEV=true'
+        ]
+      }
+    };
+
+    // Gestion améliorée des erreurs
+    window.addEventListener('error', function(event) {
+      const errorInfo = {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error?.stack || event.error
+      };
+      
+      console.error('Erreur JavaScript:', errorInfo);
+      
+      if (window.ENV.production && window.gtag) {
+        window.gtag('event', 'exception', {
+          description: errorInfo.message,
+          fatal: false
+        });
+      }
+    });
+    
+    window.addEventListener('unhandledrejection', function(event) {
+      console.error('Promise rejetée:', event.reason);
+      
+      if (window.ENV.production && window.gtag) {
+        window.gtag('event', 'exception', {
+          description: 'Unhandled Promise Rejection: ' + event.reason,
+          fatal: false
+        });
+      }
+    });
+
+    // Détection des performances
+    window.addEventListener('load', function() {
+      if ('performance' in window) {
+        const loadTime = performance.now();
+        console.log('Temps de chargement:', loadTime + 'ms');
+        
+        if (window.ENV.production && window.gtag) {
+          window.gtag('event', 'timing_complete', {
+            name: 'load',
+            value: Math.round(loadTime)
+          });
+        }
+      }
+    });
+
+    // Configuration PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('flutter_service_worker.js')
+          .then(function(registration) {
+            console.log('Service Worker enregistré:', registration.scope);
+          })
+          .catch(function(error) {
+            console.error('Erreur Service Worker:', error);
+            // Ne pas bloquer l'application si le Service Worker échoue
+          });
       });
+    }
+  </script>
+</head>
+<body>
+  <!-- Écran de chargement -->
+  <div id="loading">
+    <div></div>
+  </div>
+  </div>
+
+
+
+  <!-- Chargement du script Flutter -->
+  <script src="main.dart.js" defer></script>
+  
+  <!-- Masquer l'écran de chargement une fois Flutter chargé -->
+  <script>
+    window.addEventListener('flutter-first-frame', function() {
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.style.display = 'none';
+      }
+    });
+    
+    // Fallback si l'événement flutter-first-frame n'est pas déclenché
+    setTimeout(function() {
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.style.display = 'none';
+      }
+    }, 5000);
+    
+    // Gestion des erreurs de démarrage
+    window.addEventListener('error', function(e) {
+      console.error('Erreur globale:', e);
+      // Afficher un message d'erreur plus détaillé
+      const errorMessage = document.createElement('div');
+      errorMessage.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 9999;
+      `;
+      errorMessage.innerHTML = `
+        <h2>Erreur de démarrage</h2>
+        <p>Une erreur est survenue lors du démarrage de l'application.</p>
+        <p>Message d'erreur: ${e.message}</p>
+        <p>Veuillez recharger la page et réessayer.</p>
+      `;
+      document.body.appendChild(errorMessage);
     });
   </script>
 </body>
